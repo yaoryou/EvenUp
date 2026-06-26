@@ -1,0 +1,17 @@
+{
+  "name": "EvenUp",
+  "short_name": "EvenUp",
+  "description": "身内向けの割り勘・部分精算管理",
+  "start_url": "./#/record",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#246bfd",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

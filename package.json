@@ -1,0 +1,23 @@
+{
+  "name": "evenup",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "serve": "node scripts/serve.mjs",
+    "check": "node scripts/check.mjs",
+    "test": "node --test",
+    "secret:generate": "node scripts/generate-production-secret.mjs",
+    "gas:login": "clasp login",
+    "gas:status": "clasp status --project gas",
+    "gas:push": "clasp push --project gas",
+    "gas:deployments": "clasp deployments --project gas",
+    "smoke:production": "node scripts/serve-production-smoke.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}
