@@ -17,61 +17,92 @@ async function refreshPreview() {
 }
 
 function createDirectCard(route) {
+  const primaryDebts = route.debts.filter((debt) => debt.side !== "OFFSET");
+  const offsetDebts = route.debts.filter((debt) => debt.side === "OFFSET");
+  const isOffsetOnly = route.is_offset_only || route.remaining_amount === 0;
   const list = element(
     "ul",
     { className: "debt-list" },
-    route.debts.map((debt) =>
+    primaryDebts.map((debt) =>
       element("li", {}, [
         element("span", { text: debt.description }),
         element("span", { className: "amount", text: formatYen(debt.remaining_amount) })
       ])
     )
   );
+  const offsetList = offsetDebts.length
+    ? element("ul", { className: "debt-list" }, offsetDebts.map((debt) =>
+      element("li", {}, [
+        element("span", { text: `${memberName(debt.from_member_id)} → ${memberName(debt.to_member_id)} ${debt.description}` }),
+        element("span", { className: "amount", text: formatYen(debt.remaining_amount) })
+      ])
+    ))
+    : null;
 
   return element("article", { className: "card route-card" }, [
     element("div", { className: "route-members" }, [
       element("span", { text: memberName(route.from_member_id) }),
-      element("span", { className: "route-arrow", text: "→" }),
+      element("span", { className: "route-arrow", text: isOffsetOnly ? "↔" : "→" }),
       element("span", { text: memberName(route.to_member_id) })
     ]),
     element("div", { className: "split" }, [
-      element("span", { className: "muted", text: "残り" }),
+      element("span", { className: "muted", text: isOffsetOnly ? "送金なしで相殺" : "実送金" }),
       element("strong", { className: "amount", text: formatYen(route.remaining_amount) })
     ]),
+    route.offset_amount
+      ? element("p", {
+        className: "muted",
+        text: `逆方向の${formatYen(route.offset_amount)}を相殺して、2人間の差額だけを記録します。`
+      })
+      : null,
     list,
+    offsetList,
     element("button", {
       className: "button button-secondary button-block",
       type: "button",
-      text: "この送金を記録",
+      text: isOffsetOnly ? "相殺を記録" : "この送金を記録",
       onClick: () => openDirectDialog(route)
     })
   ]);
 }
 
 function openDirectDialog(route) {
+  const isOffsetOnly = route.is_offset_only || route.remaining_amount === 0;
   const input = element("input", {
     className: "input",
     type: "number",
-    min: 1,
+    min: isOffsetOnly ? 0 : 1,
     max: route.remaining_amount,
     value: route.remaining_amount,
-    inputmode: "numeric"
+    inputmode: "numeric",
+    disabled: isOffsetOnly
   });
   const error = element("p", { className: "inline-error", role: "alert" });
   const content = element("div", { className: "stack" }, [
-    element("p", { text: `${memberName(route.from_member_id)} → ${memberName(route.to_member_id)}` }),
-    element("p", { className: "muted", text: "古い支払いから順に充当されます。" }),
-    element("div", { className: "field" }, [element("label", { text: "送金額" }), input]),
+    element("p", {
+      text: isOffsetOnly
+        ? `${memberName(route.from_member_id)} ↔ ${memberName(route.to_member_id)}`
+        : `${memberName(route.from_member_id)} → ${memberName(route.to_member_id)}`
+    }),
+    element("p", {
+      className: "muted",
+      text: route.offset_amount
+        ? `逆方向の${formatYen(route.offset_amount)}を相殺し、古い支払いから順に充当されます。`
+        : "古い支払いから順に充当されます。"
+    }),
+    isOffsetOnly
+      ? element("p", { className: "muted", text: "実際の送金は不要です。相殺だけを記録します。" })
+      : element("div", { className: "field" }, [element("label", { text: "送金額" }), input]),
     error
   ]);
 
   showDialog({
-    title: "送金を記録",
+    title: isOffsetOnly ? "相殺を記録" : "送金を記録",
     content,
-    confirmLabel: "送金を記録",
+    confirmLabel: isOffsetOnly ? "相殺を記録" : "送金を記録",
     onConfirm: async () => {
-      const amount = Number(input.value);
-      if (!Number.isInteger(amount) || amount < 1 || amount > route.remaining_amount) {
+      const amount = isOffsetOnly ? 0 : Number(input.value);
+      if (!Number.isInteger(amount) || amount < (isOffsetOnly ? 0 : 1) || amount > route.remaining_amount) {
         error.textContent = `1円から${formatYen(route.remaining_amount)}までで入力してください。`;
         return false;
       }

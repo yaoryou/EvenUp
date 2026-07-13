@@ -255,9 +255,9 @@ ActionやCalculatorからSpreadsheet Serviceを直接呼ばない。
 
 ### 6.2 DirectRouteCalculator
 
-- 残債を`debtorMemberId + creditorMemberId`で集約する。
+- 残債を2人のメンバーペアで集約し、A→BとB→Aを相殺して差額ルートにする。
 - 内訳を`paidAt`、`paymentId`順に並べる。
-- route keyは送金元・先と現在の債務ID・残額を正規化してハッシュ化する。
+- route keyは送金元・先、相殺額、現在の債務ID・残額を正規化して作る。
 
 ### 6.3 OptimizedRouteCalculator
 
@@ -474,4 +474,3 @@ ActionやCalculatorからSpreadsheet Serviceを直接呼ばない。
 7. 同じ`request_id`で重複しない。
 8. iPhone SafariとAndroid Chromeで主要操作を完了できる。
 9. 生のアクセスキーがソース、ログ、Git履歴にない。
-

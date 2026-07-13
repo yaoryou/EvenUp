@@ -1,19 +1,26 @@
 EvenUp.AllocationCalculator = {
-  direct: function (debts, fromMemberId, toMemberId, amount) {
-    var candidates = debts.filter(function (debt) {
-      return debt.remainingAmount > 0 &&
-        debt.debtorMemberId === fromMemberId &&
-        debt.creditorMemberId === toMemberId;
-    }).sort(function (left, right) {
-      return new Date(left.paidAt) - new Date(right.paidAt) ||
-        String(left.paymentId).localeCompare(String(right.paymentId));
-    });
-    var available = candidates.reduce(function (sum, debt) { return sum + debt.remainingAmount; }, 0);
-    if (!Number.isInteger(amount) || amount < 1 || amount > available) throw new Error("invalid allocation amount");
-
-    var remaining = amount;
+  direct: function (route, amount) {
+    var maxCashAmount = route.remainingAmount;
+    if (!Number.isInteger(amount) || amount < 0 || amount > maxCashAmount) {
+      throw new Error("invalid allocation amount");
+    }
+    if (maxCashAmount > 0 && amount < 1) {
+      throw new Error("invalid allocation amount");
+    }
     var allocations = [];
-    candidates.forEach(function (debt) {
+
+    this.allocateDebts(route.offsetDebts, route.offsetAmount, allocations);
+    this.allocateDebts(route.primaryDebts, route.offsetAmount + amount, allocations);
+
+    return allocations.map(function (allocation, index) {
+      allocation.sortOrder = index + 1;
+      return allocation;
+    });
+  },
+
+  allocateDebts: function (debts, amount, allocations) {
+    var remaining = amount;
+    debts.forEach(function (debt) {
       if (!remaining) return;
       var allocatedAmount = Math.min(remaining, debt.remainingAmount);
       allocations.push({
@@ -24,7 +31,7 @@ EvenUp.AllocationCalculator = {
       });
       remaining -= allocatedAmount;
     });
-    return allocations;
+    if (remaining) throw new Error("invalid allocation amount");
   },
 
   optimized: function (debts) {

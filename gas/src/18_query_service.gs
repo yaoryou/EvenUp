@@ -58,9 +58,14 @@ EvenUp.QueryService = {
           from_member_id: route.fromMemberId,
           to_member_id: route.toMemberId,
           remaining_amount: route.remainingAmount,
+          offset_amount: route.offsetAmount,
+          is_offset_only: route.isOffsetOnly,
           debts: route.debts.map(function (debt) {
             return {
               payment_id: debt.paymentId,
+              from_member_id: debt.debtorMemberId,
+              to_member_id: debt.creditorMemberId,
+              side: debt.side,
               description: debt.description,
               paid_at: debt.paidAt,
               remaining_amount: debt.remainingAmount

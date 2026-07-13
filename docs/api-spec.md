@@ -131,13 +131,27 @@ Response: application/json
   "route_key": "base64url",
   "from_member_id": "M002",
   "to_member_id": "M001",
-  "remaining_amount": 1334,
+  "remaining_amount": 1034,
+  "offset_amount": 300,
+  "is_offset_only": false,
   "debts": [
     {
       "payment_id": "uuid",
+      "from_member_id": "M002",
+      "to_member_id": "M001",
+      "side": "PRIMARY",
       "description": "ラーメン",
       "paid_at": "2026-06-20T12:00:00+09:00",
       "remaining_amount": 334
+    },
+    {
+      "payment_id": "uuid",
+      "from_member_id": "M001",
+      "to_member_id": "M002",
+      "side": "OFFSET",
+      "description": "タクシー",
+      "paid_at": "2026-06-20T13:00:00+09:00",
+      "remaining_amount": 300
     }
   ]
 }
@@ -237,7 +251,7 @@ Response:
 ```
 
 - `open_payments`は`UNSETTLED`または`PARTIALLY_SETTLED`。
-- `direct_routes`は直接債務を債務者・受取者で集約した候補。
+- `direct_routes`は2人間の直接債務を相殺し、差額だけを実送金額として集約した候補。
 - `optimized_routes`は全残債を純収支化した候補。
 - `optimized_snapshot_token`は最適化一括記録の競合検知に使う。
 
@@ -329,7 +343,7 @@ ID順に正規化し、SHA-256 Base64 URL形式で生成する。
 
 ## 12. `transfers.create_direct`
 
-選択した直接債務へ実送金を記録する。
+選択した2人間の相殺済み直接債務へ実送金または相殺のみを記録する。
 
 Payload:
 
@@ -348,8 +362,8 @@ Payload:
 2. 同じ`request_id`のバッチがあれば既存結果を返す。
 3. 最新残債から同じ送金元・先の直接債務を再構築する。
 4. `route_key`と送金元・先を検証する。
-5. 金額が1円以上、最新グループ残債以下であることを確認する。
-6. 古い`paid_at`、同時刻`payment_id`順にFIFO充当を作る。
+5. 差額がある場合は金額が1円以上・最新候補差額以下、差額0円の場合は0円であることを確認する。
+6. 逆方向残債を相殺として充当し、実送金額と相殺額を合算した額を差額支払い側の残債へFIFO充当する。
 7. `DIRECT`バッチ、送金1件、充当行を保存する。
 8. 事後整合性を検査する。
 
@@ -514,4 +528,3 @@ async function callApi(action, payload = {}, requestId = null) {
 - 生キーとリクエスト本文全体を記録しない。
 - `v1`内で既存フィールドを削除・型変更しない。
 - 破壊的変更時はAPIバージョンを更新する。
-

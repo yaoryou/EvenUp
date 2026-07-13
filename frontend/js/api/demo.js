@@ -97,35 +97,85 @@ function paymentDto(payment) {
 function directRoutes(openDebts) {
   const groups = new Map();
   for (const debt of openDebts.filter((item) => item.remaining_amount > 0)) {
-    const key = `${debt.debtor_member_id}::${debt.creditor_member_id}`;
+    const members = [debt.debtor_member_id, debt.creditor_member_id].sort();
+    const key = `${members[0]}::${members[1]}`;
     if (!groups.has(key)) {
       groups.set(key, {
+        members,
+        directions: new Map()
+      });
+    }
+    const directionKey = `${debt.debtor_member_id}::${debt.creditor_member_id}`;
+    const group = groups.get(key);
+    if (!group.directions.has(directionKey)) {
+      group.directions.set(directionKey, {
         from_member_id: debt.debtor_member_id,
         to_member_id: debt.creditor_member_id,
+        amount: 0,
         debts: []
       });
     }
-    groups.get(key).debts.push(debt);
+    const direction = group.directions.get(directionKey);
+    direction.amount += debt.remaining_amount;
+    direction.debts.push(debt);
   }
   return [...groups.values()].map((group) => {
-    group.debts.sort((left, right) =>
-      new Date(left.paid_at) - new Date(right.paid_at) ||
-      left.payment_id.localeCompare(right.payment_id)
+    const directions = [...group.directions.values()].map((direction) => {
+      direction.debts.sort((left, right) =>
+        new Date(left.paid_at) - new Date(right.paid_at) ||
+        left.payment_id.localeCompare(right.payment_id)
+      );
+      return direction;
+    }).sort((left, right) =>
+      right.amount - left.amount ||
+      left.from_member_id.localeCompare(right.from_member_id) ||
+      left.to_member_id.localeCompare(right.to_member_id)
     );
-    const routeKey = `${group.from_member_id}|${group.to_member_id}|${group.debts.map((debt) => `${debt.payment_id}:${debt.remaining_amount}`).join(",")}`;
+    const primary = directions[0];
+    const offset = directions[1] || {
+      from_member_id: primary.to_member_id,
+      to_member_id: primary.from_member_id,
+      amount: 0,
+      debts: []
+    };
+    const isOffsetOnly = primary.amount === offset.amount;
+    const primaryDebts = primary.debts.map((debt) => ({ ...debt, side: "PRIMARY" }));
+    const offsetDebts = offset.debts.map((debt) => ({ ...debt, side: "OFFSET" }));
+    const routeDebts = [...primaryDebts, ...offsetDebts];
+    const remainingAmount = primary.amount - offset.amount;
+    const fromMemberId = isOffsetOnly ? group.members[0] : primary.from_member_id;
+    const toMemberId = isOffsetOnly ? group.members[1] : primary.to_member_id;
+    const routeKey = [
+      fromMemberId,
+      toMemberId,
+      remainingAmount,
+      offset.amount,
+      routeDebts.map((debt) => [
+        debt.side,
+        debt.debtor_member_id,
+        debt.creditor_member_id,
+        debt.payment_id,
+        debt.remaining_amount
+      ].join(":")).join(",")
+    ].join("|");
     return {
       route_key: routeKey,
-      from_member_id: group.from_member_id,
-      to_member_id: group.to_member_id,
-      remaining_amount: group.debts.reduce((sum, debt) => sum + debt.remaining_amount, 0),
-      debts: group.debts.map((debt) => ({
+      from_member_id: fromMemberId,
+      to_member_id: toMemberId,
+      remaining_amount: remainingAmount,
+      offset_amount: offset.amount,
+      is_offset_only: isOffsetOnly,
+      debts: routeDebts.map((debt) => ({
         payment_id: debt.payment_id,
+        from_member_id: debt.debtor_member_id,
+        to_member_id: debt.creditor_member_id,
+        side: debt.side,
         description: debt.description,
         paid_at: debt.paid_at,
         remaining_amount: debt.remaining_amount
       }))
     };
-  });
+  }).filter((route) => route.remaining_amount > 0 || route.offset_amount > 0);
 }
 
 function optimizedRoutes(openDebts) {
@@ -197,23 +247,35 @@ function createDirect(payload) {
     item.from_member_id === payload.from_member_id &&
     item.to_member_id === payload.to_member_id
   );
-  if (!route || payload.amount < 1 || payload.amount > route.remaining_amount) {
+  if (!route) {
     throw new Error("個別精算の内容が更新されました。");
   }
-  let remaining = payload.amount;
   const allocations = [];
-  for (const debt of route.debts) {
-    if (!remaining) break;
-    const amount = Math.min(remaining, debt.remaining_amount);
-    allocations.push({
-      payment_id: debt.payment_id,
-      description: debt.description,
-      member_id: payload.from_member_id,
-      allocated_amount: amount,
-      sort_order: allocations.length + 1
-    });
-    remaining -= amount;
+  function allocate(routeDebts, amount) {
+    let remaining = amount;
+    for (const debt of routeDebts) {
+      if (!remaining) break;
+      const allocatedAmount = Math.min(remaining, debt.remaining_amount);
+      allocations.push({
+        payment_id: debt.payment_id,
+        description: debt.description,
+        member_id: debt.from_member_id,
+        allocated_amount: allocatedAmount,
+        sort_order: allocations.length + 1
+      });
+      remaining -= allocatedAmount;
+    }
+    if (remaining) throw new Error("個別精算の内容が更新されました。");
   }
+  if (!Number.isInteger(payload.amount) || payload.amount < 0 || payload.amount > route.remaining_amount ||
+    (route.remaining_amount > 0 && payload.amount < 1)) {
+    throw new Error("個別精算の内容が更新されました。");
+  }
+  allocate(route.debts.filter((debt) => debt.side === "OFFSET"), route.offset_amount || 0);
+  allocate(route.debts.filter((debt) => debt.side === "PRIMARY"), (route.offset_amount || 0) + payload.amount);
+  allocations.forEach((allocation, index) => {
+    allocation.sort_order = index + 1;
+  });
   const now = new Date().toISOString();
   const batch = {
     transfer_batch_id: crypto.randomUUID(),

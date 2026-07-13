@@ -3,11 +3,9 @@ EvenUp.TransferService = {
     var existing = EvenUp.TransferRepository.findBatchByRequestId(requestId);
     if (existing) return { transfer_batch: existing, idempotent_replay: true, preview: EvenUp.QueryService.preview() };
 
-    var amount = EvenUp.Validation.requireAmount(payload.amount, "amount");
     var fromId = EvenUp.Validation.requireString(payload.from_member_id, "from_member_id");
     var toId = EvenUp.Validation.requireString(payload.to_member_id, "to_member_id");
     var debts = EvenUp.QueryService.debts();
-    var allocations = EvenUp.AllocationCalculator.direct(debts, fromId, toId, amount);
     var routes = EvenUp.DirectRouteCalculator.calculate(debts);
     var route = routes.find(function (item) {
       return item.fromMemberId === fromId && item.toMemberId === toId;
@@ -15,6 +13,16 @@ EvenUp.TransferService = {
     if (!route || route.routeKey !== payload.route_key) {
       throw new EvenUp.AppError("DIRECT_ROUTE_CONFLICT", "個別精算の内容が更新されました。");
     }
+    var amount = Number(payload.amount);
+    if (!Number.isInteger(amount) || amount < 0 || amount > route.remainingAmount ||
+      (route.remainingAmount > 0 && amount < 1)) {
+      throw new EvenUp.AppError("VALIDATION_ERROR", "入力内容を確認してください。", {
+        amount: route.remainingAmount > 0
+          ? "1円以上、候補金額以下の整数を入力してください。"
+          : "0円を入力してください。"
+      });
+    }
+    var allocations = EvenUp.AllocationCalculator.direct(route, amount);
 
     var now = new Date();
     var batchId = Utilities.getUuid();
