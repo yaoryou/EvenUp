@@ -30,6 +30,17 @@
   text-align: right;
 }
 
+.route-detail-group {
+  display: grid;
+  gap: 6px;
+}
+
+.route-detail-heading {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
 .debt-list {
   display: grid;
   gap: 6px;

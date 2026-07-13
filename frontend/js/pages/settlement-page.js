@@ -16,28 +16,22 @@ async function refreshPreview() {
   applyPreview(await callApi("settlement.preview"));
 }
 
-function createDirectCard(route) {
-  const primaryDebts = route.debts.filter((debt) => debt.side !== "OFFSET");
-  const offsetDebts = route.debts.filter((debt) => debt.side === "OFFSET");
-  const isOffsetOnly = route.is_offset_only || route.remaining_amount === 0;
-  const list = element(
-    "ul",
-    { className: "debt-list" },
-    primaryDebts.map((debt) =>
+function createRouteDebtSection(title, debts) {
+  return element("section", { className: "route-detail-group" }, [
+    element("h3", { className: "route-detail-heading", text: title }),
+    element("ul", { className: "debt-list" }, debts.map((debt) =>
       element("li", {}, [
         element("span", { text: debt.description }),
         element("span", { className: "amount", text: formatYen(debt.remaining_amount) })
       ])
-    )
-  );
-  const offsetList = offsetDebts.length
-    ? element("ul", { className: "debt-list" }, offsetDebts.map((debt) =>
-      element("li", {}, [
-        element("span", { text: `${memberName(debt.from_member_id)} → ${memberName(debt.to_member_id)} ${debt.description}` }),
-        element("span", { className: "amount", text: formatYen(debt.remaining_amount) })
-      ])
     ))
-    : null;
+  ]);
+}
+
+function createDirectCard(route) {
+  const primaryDebts = route.debts.filter((debt) => debt.side !== "OFFSET");
+  const offsetDebts = route.debts.filter((debt) => debt.side === "OFFSET");
+  const isOffsetOnly = route.is_offset_only || route.remaining_amount === 0;
 
   return element("article", { className: "card route-card" }, [
     element("div", { className: "route-members" }, [
@@ -49,21 +43,52 @@ function createDirectCard(route) {
       element("span", { className: "muted", text: isOffsetOnly ? "送金なしで相殺" : "実送金" }),
       element("strong", { className: "amount", text: formatYen(route.remaining_amount) })
     ]),
-    route.offset_amount
-      ? element("p", {
-        className: "muted",
-        text: `逆方向の${formatYen(route.offset_amount)}を相殺して、2人間の差額だけを記録します。`
-      })
-      : null,
-    list,
-    offsetList,
+    element("div", { className: "split" }, [
+      element("span", { className: "muted", text: "相殺" }),
+      element("strong", { className: "amount", text: formatYen(route.offset_amount || 0) })
+    ]),
     element("button", {
-      className: "button button-secondary button-block",
+      className: "button button-primary button-block",
       type: "button",
       text: isOffsetOnly ? "相殺を記録" : "この送金を記録",
       onClick: () => openDirectDialog(route)
+    }),
+    element("button", {
+      className: "button button-secondary button-block",
+      type: "button",
+      text: "詳細を見る",
+      onClick: () => openDirectDetailDialog(route, primaryDebts, offsetDebts)
     })
   ]);
+}
+
+function openDirectDetailDialog(route, primaryDebts, offsetDebts) {
+  const offsetHeading = offsetDebts.length
+    ? `${memberName(offsetDebts[0].from_member_id)} → ${memberName(offsetDebts[0].to_member_id)}を相殺`
+    : "";
+
+  showDialog({
+    title: "個別精算の詳細",
+    showCancel: false,
+    confirmLabel: "閉じる",
+    content: element("div", { className: "stack" }, [
+      element("div", { className: "route-members" }, [
+        element("span", { text: memberName(route.from_member_id) }),
+        element("span", { className: "route-arrow", text: route.remaining_amount === 0 ? "↔" : "→" }),
+        element("span", { text: memberName(route.to_member_id) })
+      ]),
+      element("div", { className: "split" }, [
+        element("span", { className: "muted", text: "実送金" }),
+        element("strong", { className: "amount", text: formatYen(route.remaining_amount) })
+      ]),
+      element("div", { className: "split" }, [
+        element("span", { className: "muted", text: "相殺" }),
+        element("strong", { className: "amount", text: formatYen(route.offset_amount || 0) })
+      ]),
+      createRouteDebtSection("送金対象", primaryDebts),
+      offsetDebts.length ? createRouteDebtSection(offsetHeading, offsetDebts) : null
+    ])
+  });
 }
 
 function openDirectDialog(route) {
@@ -86,9 +111,7 @@ function openDirectDialog(route) {
     }),
     element("p", {
       className: "muted",
-      text: route.offset_amount
-        ? `逆方向の${formatYen(route.offset_amount)}を相殺し、古い支払いから順に充当されます。`
-        : "古い支払いから順に充当されます。"
+      text: "表示中の金額を、古い支払いから順に充当します。"
     }),
     isOffsetOnly
       ? element("p", { className: "muted", text: "実際の送金は不要です。相殺だけを記録します。" })
