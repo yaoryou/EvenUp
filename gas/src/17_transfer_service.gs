@@ -24,7 +24,7 @@ EvenUp.TransferService = {
     }
     var allocations = EvenUp.AllocationCalculator.direct(route, amount);
 
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     var batchId = Utilities.getUuid();
     var batch = {
       transfer_batch_id: batchId,
@@ -75,7 +75,7 @@ EvenUp.TransferService = {
 
     var routes = EvenUp.OptimizedRouteCalculator.calculate(debts);
     var allocations = EvenUp.AllocationCalculator.optimized(debts);
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     var batchId = Utilities.getUuid();
     var batch = {
       transfer_batch_id: batchId,
@@ -136,7 +136,7 @@ EvenUp.TransferService = {
         "取り消せるのは直前の精算記録だけです。"
       );
     }
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     latest.status = "CANCELLED";
     latest.cancelled_at = now;
     latest.updated_at = now;

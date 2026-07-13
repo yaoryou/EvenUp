@@ -35,7 +35,7 @@ EvenUp.Response = {
     return {
       api_version: EvenUp.Config.API_VERSION,
       request_id: requestId || null,
-      server_time: Utilities.formatDate(new Date(), EvenUp.Config.TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ssXXX")
+      server_time: EvenUp.DateTime.now()
     };
   },
 

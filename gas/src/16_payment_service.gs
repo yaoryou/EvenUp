@@ -18,7 +18,7 @@ EvenUp.PaymentService = {
       throw new EvenUp.AppError("MEMBER_INACTIVE", "無効なメンバーが含まれています。");
     }
 
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     var paymentId = Utilities.getUuid();
     var shares = EvenUp.ShareCalculator.calculate(amount, paidBy, targetIds);
     var payment = {
@@ -49,7 +49,7 @@ EvenUp.PaymentService = {
   update: function (payload) {
     var payment = this.requireEditablePayment(payload.payment_id, payload.expected_updated_at);
     var validated = this.validateInput(payload);
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     var shares = EvenUp.ShareCalculator.calculate(
       validated.amount,
       validated.paidBy,
@@ -75,7 +75,7 @@ EvenUp.PaymentService = {
 
   cancel: function (payload) {
     var payment = this.requireEditablePayment(payload.payment_id, payload.expected_updated_at);
-    var now = new Date();
+    var now = EvenUp.DateTime.now();
     payment.cancelled_at = now;
     payment.updated_at = now;
     EvenUp.PaymentRepository.update(payment);

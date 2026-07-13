@@ -12,3 +12,13 @@ EvenUp.Config = Object.freeze({
     transfer_allocations: ["allocation_id", "transfer_batch_id", "payment_id", "member_id", "allocated_amount", "sort_order", "created_at"]
   }
 });
+
+EvenUp.DateTime = {
+  now: function () {
+    return this.toIsoString(new Date());
+  },
+
+  toIsoString: function (date) {
+    return Utilities.formatDate(date, EvenUp.Config.TIME_ZONE, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+  }
+};

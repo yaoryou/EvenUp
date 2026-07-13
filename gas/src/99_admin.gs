@@ -1,5 +1,6 @@
 function setupSheets() {
   var spreadsheet = EvenUp.SheetRepository.spreadsheet();
+  spreadsheet.setSpreadsheetTimeZone(EvenUp.Config.TIME_ZONE);
   Object.keys(EvenUp.Config.SHEETS).forEach(function (sheetName) {
     var sheet = spreadsheet.getSheetByName(sheetName) || spreadsheet.insertSheet(sheetName);
     var headers = EvenUp.Config.SHEETS[sheetName];
@@ -16,7 +17,11 @@ function setupSheets() {
 }
 
 function validateDatabase() {
-  EvenUp.SheetSchema.validate(EvenUp.SheetRepository.spreadsheet());
+  var spreadsheet = EvenUp.SheetRepository.spreadsheet();
+  if (spreadsheet.getSpreadsheetTimeZone() !== EvenUp.Config.TIME_ZONE) {
+    throw new Error("スプレッドシートのタイムゾーンがAsia/Tokyoではありません。");
+  }
+  EvenUp.SheetSchema.validate(spreadsheet);
   return "OK";
 }
 
@@ -25,7 +30,7 @@ function seedInitialMembers() {
   if (existing.length > 0) {
     return "SKIPPED: members already exist";
   }
-  var now = new Date();
+  var now = EvenUp.DateTime.now();
   var names = ["ナカチ", "シャ卿", "チンピラ"];
   EvenUp.SheetRepository.appendRows("members", names.map(function (name, index) {
     return {
@@ -49,6 +54,7 @@ function showConfigurationStatus() {
   var properties = PropertiesService.getScriptProperties();
   return {
     spreadsheet_id_configured: Boolean(properties.getProperty("SPREADSHEET_ID")),
-    access_key_configured: Boolean(properties.getProperty("ACCESS_KEY_SHA256"))
+    access_key_configured: Boolean(properties.getProperty("ACCESS_KEY_SHA256")),
+    spreadsheet_time_zone: EvenUp.SheetRepository.spreadsheet().getSpreadsheetTimeZone()
   };
 }
