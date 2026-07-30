@@ -6,6 +6,7 @@ export const CONFIG = Object.freeze({
   STORAGE_KEYS: {
     accessKey: "evenup_access_key",
     lastPayer: "evenup_last_payer",
+    operatorMemberId: "evenup_operator_member_id",
     settlementMode: "evenup_settlement_mode"
   }
 });

@@ -6,7 +6,7 @@ import { CONFIG } from "./config.js";
 import { createAppShell } from "./components/app-shell.js";
 import { showDialog } from "./components/dialog.js";
 import { clear, element } from "./utils/dom.js";
-import { removeStored } from "./utils/storage.js";
+import { getStored, removeStored, setStored } from "./utils/storage.js";
 import { createAccessKeyPage } from "./pages/access-key-page.js";
 import { createHistoryPage } from "./pages/history-page.js";
 import { createRecordPage } from "./pages/record-page.js";
@@ -15,7 +15,27 @@ import { createSettlementPage } from "./pages/settlement-page.js";
 const app = document.querySelector("#app");
 
 function settingsDialog() {
+  const members = getState().data.members.filter((member) => member.active);
   const status = element("p", { className: "muted", text: CONFIG.USE_DEMO_DATA ? "現在はデモデータで動作しています。" : "GAS APIに接続しています。" });
+  const operatorSelect = element("select", { className: "select", id: "operator-member" }, [
+    element("option", { value: "", text: "未設定" }),
+    ...members.map((member) => element("option", { value: member.member_id, text: member.name }))
+  ]);
+  operatorSelect.value = getStored(CONFIG.STORAGE_KEYS.operatorMemberId) || "";
+  const saveOperator = element("button", {
+    className: "button button-primary button-block",
+    type: "button",
+    text: "操作ユーザを保存",
+    onClick: () => {
+      if (operatorSelect.value) {
+        setStored(CONFIG.STORAGE_KEYS.operatorMemberId, operatorSelect.value);
+      } else {
+        removeStored(CONFIG.STORAGE_KEYS.operatorMemberId);
+      }
+      status.textContent = "操作ユーザ設定を保存しました。";
+      setState((state) => ({ ...state }));
+    }
+  });
   const refresh = element("button", {
     className: "button button-secondary button-block",
     type: "button",
@@ -36,6 +56,11 @@ function settingsDialog() {
     title: "設定",
     content: element("div", { className: "stack" }, [
       element("p", { className: "muted", text: "EvenUp v0.2.0" }),
+      element("div", { className: "field" }, [
+        element("label", { for: "operator-member", text: "この端末の操作ユーザ" }),
+        operatorSelect
+      ]),
+      saveOperator,
       status,
       refresh
     ]),
@@ -44,6 +69,7 @@ function settingsDialog() {
     onConfirm: () => {
       removeStored(CONFIG.STORAGE_KEYS.accessKey);
       removeStored(CONFIG.STORAGE_KEYS.lastPayer);
+      removeStored(CONFIG.STORAGE_KEYS.operatorMemberId);
       resetStore();
       setState((state) => ({ ...state, auth: { status: "unauthenticated" } }));
     }

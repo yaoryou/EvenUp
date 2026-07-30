@@ -4,7 +4,8 @@ import { showToast } from "../components/toast.js";
 import { applyPreview, getState } from "../app/store.js";
 import { element } from "../utils/dom.js";
 import { parseYen } from "../utils/currency.js";
-import { getStored, setStored } from "../utils/storage.js";
+import { getStored } from "../utils/storage.js";
+import { resolveDefaultPayerId } from "../utils/payer-defaults.js";
 import { createRequestId } from "../utils/uuid.js";
 import { validatePaymentInput } from "../utils/validation.js";
 
@@ -17,7 +18,11 @@ export function createRecordPage() {
     { className: "select", id: "paid-by" },
     members.map((member) => element("option", { value: member.member_id, text: member.name }))
   );
-  payer.value = getStored(CONFIG.STORAGE_KEYS.lastPayer) || members[0]?.member_id || "";
+  payer.value = resolveDefaultPayerId({
+    members,
+    operatorMemberId: getStored(CONFIG.STORAGE_KEYS.operatorMemberId),
+    lastPayerId: getStored(CONFIG.STORAGE_KEYS.lastPayer)
+  });
 
   const selected = new Set(members.map((member) => member.member_id));
   const chips = element("div", { className: "cluster" });
@@ -63,7 +68,6 @@ export function createRecordPage() {
       error.textContent = "";
       try {
         await callApi("payments.create", payload, createRequestId());
-        setStored(CONFIG.STORAGE_KEYS.lastPayer, payer.value);
         const preview = await callApi("settlement.preview");
         applyPreview(preview);
         description.value = "";
