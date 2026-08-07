@@ -26,6 +26,20 @@
   letter-spacing: -0.02em;
 }
 
+.app-identity {
+  display: grid;
+  min-width: 0;
+}
+
+.app-group-name {
+  overflow: hidden;
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .page {
   min-height: 0;
   padding: 20px 16px;

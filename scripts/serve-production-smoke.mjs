@@ -1,8 +1,9 @@
-import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
-import { resolve } from "node:path";
+import { groupIdFromArgs, loadEnvironment, loadGroups, selectGroup, validateEnvironment } from "./group-config.mjs";
 
-const config = JSON.parse(await readFile(resolve(".evenup-production.json"), "utf8"));
+const group = selectGroup(await loadGroups(), groupIdFromArgs(process.argv.slice(2)));
+const { environment: config } = await loadEnvironment(group);
+validateEnvironment(group, config, ["access_key", "web_app_url"]);
 const port = Number(process.env.PORT || 4174);
 const payload = JSON.stringify({
   api_version: "v1",
@@ -15,10 +16,10 @@ const payload = JSON.stringify({
 const html = `<!doctype html>
 <html lang="ja">
   <meta charset="utf-8">
-  <title>EvenUp Production Smoke Test</title>
+  <title>EvenUp ${group.name} Smoke Test</title>
   <body>
     <main>
-      <h1>EvenUp Production Smoke Test</h1>
+      <h1>EvenUp ${group.name} Smoke Test</h1>
       <p id="status">確認中…</p>
     </main>
     <script>
@@ -52,5 +53,5 @@ createServer((_request, response) => {
   });
   response.end(html);
 }).listen(port, "127.0.0.1", () => {
-  console.log(`EvenUp production smoke test: http://127.0.0.1:${port}`);
+  console.log(`EvenUp ${group.id} smoke test: http://127.0.0.1:${port}`);
 });

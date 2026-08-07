@@ -8,7 +8,7 @@
 npm run serve
 ```
 
-ブラウザで`http://localhost:4173`を開きます。初期状態ではAPI URLが未設定のため、デモデータで画面を確認できます。
+ブラウザで`http://localhost:4173`を開きます。`config/groups.json`に定義した既定グループへ移動します。
 
 ## 検証
 
@@ -19,14 +19,22 @@ npm test
 
 ## ディレクトリ
 
-- `frontend/`: GitHub Pagesへ配置する静的アプリ
+- `frontend/`: グループ別フロントエンドの共通ソース
+- `config/`: 公開可能なグループ設定
+- `dist/`: GitHub Pagesへ配置する生成物（Git管理外）
 - `gas/`: Google Apps Script Webアプリ
 - `tests/`: Node標準テスト
 - `docs/`: 要件・画面・API・シート・実装設計
 
-## API設定
+## グループ設定
 
-本番接続時は`frontend/js/config.js`の`API_URL`へGAS WebアプリURLを設定し、`USE_DEMO_DATA`を`false`へ変更します。
+- 公開可能な表示名・URL: `config/groups.json`
+- アクセスキーやGASプロジェクトID: `.evenup-groups/<group-id>.json`（Git管理外）
+- フロントエンド生成: `npm run build`
+- 全GASへの一括反映: `npm run gas:deploy:all`
+
+コードは共通で、GASプロジェクト、スプレッドシート、アクセスキーはグループごとに分離します。
+`enabled: false`の準備中グループは、GitHub Pagesと一括GAS配布の対象外です。
 
 ## 実装済み機能
 
@@ -38,7 +46,7 @@ npm test
 - 支払い・送金の統合履歴と20件ページング
 - 共有アクセスキー認証、冪等ID、ScriptLock
 
-`frontend/js/config.js`は初期状態でデモモードです。GAS接続前でも一連の操作を確認できます。
+デモ環境を追加する場合は、そのグループ設定の`use_demo_data`を`true`にし、`api_url`を空にします。
 
 設計の入口は[docs/README.md](./docs/README.md)です。
 本番接続手順は[docs/production-setup.md](./docs/production-setup.md)です。

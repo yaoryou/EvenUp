@@ -3,5 +3,7 @@ node_modules/
 .clasp.json
 .clasprc.json
 .evenup-production.json
+.evenup-groups/
+dist/
 coverage/
 *.log

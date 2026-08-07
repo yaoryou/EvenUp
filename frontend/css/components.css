@@ -6,6 +6,12 @@
   box-shadow: var(--shadow-card);
 }
 
+.group-name {
+  margin: -12px 0 0;
+  color: var(--color-primary-strong);
+  font-weight: 800;
+}
+
 .field {
   display: grid;
   gap: 7px;

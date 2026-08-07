@@ -1,7 +1,7 @@
 const members = [
-  { member_id: "M001", name: "ナカチ", active: true, sort_order: 10 },
-  { member_id: "M002", name: "シャ卿", active: true, sort_order: 20 },
-  { member_id: "M003", name: "チンピラ", active: true, sort_order: 30 }
+  { member_id: "M001", name: "あおい", active: true, sort_order: 10 },
+  { member_id: "M002", name: "れん", active: true, sort_order: 20 },
+  { member_id: "M003", name: "みお", active: true, sort_order: 30 }
 ];
 
 const payments = [

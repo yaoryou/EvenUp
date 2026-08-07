@@ -2,7 +2,7 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 
-const root = join(import.meta.dirname, "..", "frontend");
+const root = join(import.meta.dirname, "..", "dist");
 const port = Number(process.env.PORT || 4173);
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
@@ -18,7 +18,11 @@ createServer((request, response) => {
   const requested = normalize(pathname).replace(/^(\.\.[/\\])+/, "");
   let filePath = join(root, requested === "/" ? "index.html" : requested);
 
-  if (!filePath.startsWith(root) || !existsSync(filePath) || statSync(filePath).isDirectory()) {
+  if (filePath.startsWith(root) && existsSync(filePath) && statSync(filePath).isDirectory()) {
+    filePath = join(filePath, "index.html");
+  }
+
+  if (!filePath.startsWith(root) || !existsSync(filePath)) {
     filePath = join(root, "index.html");
   }
 

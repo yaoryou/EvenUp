@@ -30,8 +30,11 @@ export function createAccessKeyPage() {
       }
     }
   }, [
-    element("h1", { text: "EvenUp" }),
-    element("p", { className: "muted", text: "グループのアクセスキーを入力してください。" }),
+    element("div", {}, [
+      element("h1", { text: CONFIG.APP_NAME }),
+      element("p", { className: "group-name", text: CONFIG.GROUP_NAME })
+    ]),
+    element("p", { className: "muted", text: "このグループのアクセスキーを入力してください。" }),
     element("div", { className: "field" }, [
       element("label", { for: "access-key", text: "アクセスキー" }),
       input,

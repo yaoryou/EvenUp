@@ -6,13 +6,22 @@ import { CONFIG } from "./config.js";
 import { createAppShell } from "./components/app-shell.js";
 import { showDialog } from "./components/dialog.js";
 import { clear, element } from "./utils/dom.js";
-import { getStored, removeStored, setStored } from "./utils/storage.js";
+import { getStored, migrateStoredKeys, removeStored, setStored } from "./utils/storage.js";
 import { createAccessKeyPage } from "./pages/access-key-page.js";
 import { createHistoryPage } from "./pages/history-page.js";
 import { createRecordPage } from "./pages/record-page.js";
 import { createSettlementPage } from "./pages/settlement-page.js";
 
 const app = document.querySelector("#app");
+
+if (CONFIG.LEGACY_STORAGE_KEYS) {
+  migrateStoredKeys(
+    Object.keys(CONFIG.STORAGE_KEYS).map((name) => [
+      CONFIG.LEGACY_STORAGE_KEYS[name],
+      CONFIG.STORAGE_KEYS[name]
+    ])
+  );
+}
 
 function settingsDialog() {
   const members = getState().data.members.filter((member) => member.active);
@@ -55,7 +64,7 @@ function settingsDialog() {
   showDialog({
     title: "設定",
     content: element("div", { className: "stack" }, [
-      element("p", { className: "muted", text: "EvenUp v0.2.0" }),
+      element("p", { className: "muted", text: `${CONFIG.APP_NAME} v0.2.0 / ${CONFIG.GROUP_NAME}` }),
       element("div", { className: "field" }, [
         element("label", { for: "operator-member", text: "この端末の操作ユーザ" }),
         operatorSelect
@@ -70,6 +79,7 @@ function settingsDialog() {
       removeStored(CONFIG.STORAGE_KEYS.accessKey);
       removeStored(CONFIG.STORAGE_KEYS.lastPayer);
       removeStored(CONFIG.STORAGE_KEYS.operatorMemberId);
+      removeStored(CONFIG.STORAGE_KEYS.settlementMode);
       resetStore();
       setState((state) => ({ ...state, auth: { status: "unauthenticated" } }));
     }
@@ -81,7 +91,7 @@ function render() {
   clear(app);
 
   if (state.auth.status === "checking") {
-    app.append(element("main", { className: "loading-layout", text: "EvenUp 読み込み中…" }));
+    app.append(element("main", { className: "loading-layout", text: `${CONFIG.GROUP_NAME}を読み込み中…` }));
     return;
   }
   if (state.auth.status !== "authenticated") {

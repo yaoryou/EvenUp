@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "id": "main",
+      "name": "メイングループ",
+      "path": "main",
+      "api_url": "https://script.google.com/macros/s/DEPLOYMENT_ID/exec",
+      "use_demo_data": false,
+      "enabled": true,
+      "default": true,
+      "migrate_legacy_storage": true,
+      "legacy_environment": true
+    },
+    {
+      "id": "second-group",
+      "name": "第2グループ",
+      "path": "second-group",
+      "api_url": "https://script.google.com/macros/s/DEPLOYMENT_ID/exec",
+      "use_demo_data": false,
+      "enabled": true,
+      "default": false,
+      "migrate_legacy_storage": false,
+      "legacy_environment": false
+    }
+  ]
+}

@@ -26,23 +26,7 @@ function validateDatabase() {
 }
 
 function seedInitialMembers() {
-  var existing = EvenUp.MemberRepository.list();
-  if (existing.length > 0) {
-    return "SKIPPED: members already exist";
-  }
-  var now = EvenUp.DateTime.now();
-  var names = ["ナカチ", "シャ卿", "チンピラ"];
-  EvenUp.SheetRepository.appendRows("members", names.map(function (name, index) {
-    return {
-      member_id: Utilities.getUuid(),
-      name: name,
-      active: true,
-      sort_order: (index + 1) * 10,
-      created_at: now,
-      updated_at: now
-    };
-  }));
-  return "OK";
+  throw new Error("固定メンバーの投入は廃止しました。membersシートへグループのメンバーを登録してください。");
 }
 
 function setAccessKey(accessKey) {

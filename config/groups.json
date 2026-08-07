@@ -1,0 +1,26 @@
+{
+  "groups": [
+    {
+      "id": "fate",
+      "name": "チンパン",
+      "path": "fate",
+      "api_url": "https://script.google.com/macros/s/AKfycby19GzSavQH4XSGG769kr28j8JJH21EE6bt09LTD4UoDruSGpOIEvjjknOz_a5RK9kz/exec",
+      "use_demo_data": false,
+      "enabled": true,
+      "default": true,
+      "migrate_legacy_storage": true,
+      "legacy_environment": true
+    },
+    {
+      "id": "nko",
+      "name": "NKO",
+      "path": "nko",
+      "api_url": "https://script.google.com/macros/s/AKfycbxK5R9fpHtxvKBWxRWyN5icF1YpFxPLzKvVRYkDr-tweAJazRmiKZnYRkCxwo9QnZbu/exec",
+      "use_demo_data": false,
+      "enabled": true,
+      "default": false,
+      "migrate_legacy_storage": false,
+      "legacy_environment": false
+    }
+  ]
+}

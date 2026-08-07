@@ -426,10 +426,12 @@ ActionやCalculatorからSpreadsheet Serviceを直接呼ばない。
 
 ## 16. 開発・デプロイ
 
-- フロントはGitHub ActionsでPagesへ配置する。
-- GASは`clasp`で同期する。
-- `.clasp.json`はGit管理しない。
-- 開発・本番でスプレッドシート、GASデプロイ、キーを分ける。
+- `config/groups.json`を正として、有効なグループのフロントを`dist/<group-path>/`へ生成する。
+- フロントはGitHub Actionsで全グループをPagesへ配置する。
+- GASソースは共通とし、`clasp`の対象だけをグループ別に切り替える。
+- `npm run gas:deploy:all`は検証後、同じGitコミットを有効な全GASプロジェクトへ順次反映する。
+- `.evenup-groups/`はGit管理せず、GASプロジェクト、スプレッドシート、デプロイ、キーをグループごとに分ける。
+- ブラウザ保存キーには`group_id`を含め、同じGitHub Pagesオリジンでも衝突させない。
 - Service Workerによる業務データキャッシュは行わない。
 
 ## 17. 実装順

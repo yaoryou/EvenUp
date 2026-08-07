@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { resolveDefaultPayerId } from "../../frontend/js/utils/payer-defaults.js";
 
 const members = [
-  { member_id: "M001", name: "ナカチ", active: true },
-  { member_id: "M002", name: "シャ卿", active: true },
-  { member_id: "M003", name: "チンピラ", active: false }
+  { member_id: "M001", name: "あおい", active: true },
+  { member_id: "M002", name: "れん", active: true },
+  { member_id: "M003", name: "みお", active: false }
 ];
 
 test("operator member is used as the default payer", () => {
