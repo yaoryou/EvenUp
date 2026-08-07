@@ -6,6 +6,7 @@ import { element } from "../utils/dom.js";
 import { parseYen } from "../utils/currency.js";
 import { getStored } from "../utils/storage.js";
 import { resolveDefaultPayerId } from "../utils/payer-defaults.js";
+import { resolveDefaultTargetIds } from "../utils/target-defaults.js";
 import { createRequestId } from "../utils/uuid.js";
 import { validatePaymentInput } from "../utils/validation.js";
 
@@ -24,22 +25,36 @@ export function createRecordPage() {
     lastPayerId: getStored(CONFIG.STORAGE_KEYS.lastPayer)
   });
 
-  const selected = new Set(members.map((member) => member.member_id));
+  const defaultTargetIds = resolveDefaultTargetIds({
+    members,
+    mode: getStored(CONFIG.STORAGE_KEYS.targetSelectionMode)
+  });
+  const selected = new Set(defaultTargetIds);
+  const targetChips = new Map();
   const chips = element("div", { className: "cluster" });
   for (const member of members) {
     const chip = element("button", {
       className: "chip",
       type: "button",
       text: member.name,
-      "aria-pressed": "true",
+      "aria-pressed": String(selected.has(member.member_id)),
       onClick: () => {
         if (selected.has(member.member_id)) selected.delete(member.member_id);
         else selected.add(member.member_id);
         chip.setAttribute("aria-pressed", String(selected.has(member.member_id)));
       }
     });
+    targetChips.set(member.member_id, chip);
     chips.append(chip);
   }
+
+  const resetTargetSelection = () => {
+    selected.clear();
+    for (const memberId of defaultTargetIds) selected.add(memberId);
+    for (const [memberId, chip] of targetChips) {
+      chip.setAttribute("aria-pressed", String(selected.has(memberId)));
+    }
+  };
 
   const error = element("p", { className: "inline-error", role: "alert" });
   const submit = element("button", { className: "button button-primary button-block", type: "submit", text: "記録する" });
@@ -72,6 +87,7 @@ export function createRecordPage() {
         applyPreview(preview);
         description.value = "";
         amount.value = "";
+        resetTargetSelection();
         showToast("記録しました");
       } catch (apiError) {
         error.textContent = apiError.message;

@@ -14,6 +14,7 @@ export const CONFIG = Object.freeze({
     accessKey: `${storagePrefix}:access_key`,
     lastPayer: `${storagePrefix}:last_payer`,
     operatorMemberId: `${storagePrefix}:operator_member_id`,
+    targetSelectionMode: `${storagePrefix}:target_selection_mode`,
     settlementMode: `${storagePrefix}:settlement_mode`
   },
   LEGACY_STORAGE_KEYS: GROUP_CONFIG.migrateLegacyStorage
