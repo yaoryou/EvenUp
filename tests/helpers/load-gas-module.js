@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import vm from "node:vm";
 
-export function loadGasModules(files) {
+export function loadGasModules(files, globals = {}) {
   const context = vm.createContext({
     console,
     Date,
@@ -13,7 +13,8 @@ export function loadGasModules(files) {
     Object,
     Set,
     Array,
-    String
+    String,
+    ...globals
   });
 
   for (const file of ["00_namespace.gs", ...files]) {

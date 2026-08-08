@@ -31,8 +31,15 @@ EvenUp.Validation = {
 
 EvenUp.withScriptLock = function (callback) {
   var lock = LockService.getScriptLock();
+  var waitStartedAt = Date.now();
   if (!lock.tryLock(EvenUp.Config.LOCK_TIMEOUT_MS)) {
+    if (EvenUp.ExecutionMetrics) {
+      EvenUp.ExecutionMetrics.lock_wait_ms = Date.now() - waitStartedAt;
+    }
     throw new EvenUp.AppError("LOCK_TIMEOUT", "処理が混み合っています。もう一度お試しください。", {}, true);
+  }
+  if (EvenUp.ExecutionMetrics) {
+    EvenUp.ExecutionMetrics.lock_wait_ms = Date.now() - waitStartedAt;
   }
   try {
     return callback();

@@ -1,5 +1,6 @@
 EvenUp.TransferService = {
   createDirect: function (payload, requestId) {
+    requestId = EvenUp.Validation.requireString(requestId, "request_id");
     var existing = EvenUp.TransferRepository.findBatchByRequestId(requestId);
     if (existing) return { transfer_batch: existing, idempotent_replay: true, preview: EvenUp.QueryService.preview() };
 
@@ -61,6 +62,7 @@ EvenUp.TransferService = {
   },
 
   createOptimized: function (payload, requestId) {
+    requestId = EvenUp.Validation.requireString(requestId, "request_id");
     var existing = EvenUp.TransferRepository.findBatchByRequestId(requestId);
     if (existing) return { transfer_batch: existing, idempotent_replay: true, preview: EvenUp.QueryService.preview() };
 

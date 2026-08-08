@@ -8,7 +8,10 @@ import { getStored } from "../utils/storage.js";
 import { resolveDefaultPayerId } from "../utils/payer-defaults.js";
 import { resolveDefaultTargetIds } from "../utils/target-defaults.js";
 import { createRequestId } from "../utils/uuid.js";
+import { createPendingRequestTracker } from "../utils/pending-request.js";
 import { validatePaymentInput } from "../utils/validation.js";
+
+const pendingCreateRequests = createPendingRequestTracker(createRequestId);
 
 export function createRecordPage() {
   const members = getState().data.members.filter((member) => member.active);
@@ -81,15 +84,23 @@ export function createRecordPage() {
 
       submit.disabled = true;
       error.textContent = "";
+      const requestId = pendingCreateRequests.idFor(payload);
       try {
-        await callApi("payments.create", payload, createRequestId());
-        const preview = await callApi("settlement.preview");
-        applyPreview(preview);
+        await callApi("payments.create", payload, requestId);
+        pendingCreateRequests.complete(requestId);
         description.value = "";
         amount.value = "";
         resetTargetSelection();
         showToast("記録しました");
+
+        try {
+          const preview = await callApi("settlement.preview");
+          applyPreview(preview);
+        } catch {
+          showToast("記録済みです。最新表示の取得に失敗しました。");
+        }
       } catch (apiError) {
+        pendingCreateRequests.fail(requestId, apiError.retryable);
         error.textContent = apiError.message;
       } finally {
         submit.disabled = false;

@@ -1,5 +1,6 @@
 EvenUp.PaymentService = {
   create: function (payload, requestId) {
+    requestId = EvenUp.Validation.requireString(requestId, "request_id");
     var existing = EvenUp.PaymentRepository.findByRequestId(requestId);
     if (existing) return { payment: existing, idempotent_replay: true };
 
