@@ -54,10 +54,11 @@ Supabase Authのユーザーと、支払い計算で使うNKOメンバーは別�
 ## 適用ファイル
 
 1. `supabase/migrations/202608270001_nko_foundation.sql`
-2. `supabase/verification/202608270001_nko_foundation_check.sql`
-3. `supabase/templates/provision-first-admin.sql`
+2. `supabase/migrations/202608270002_nko_members.sql`
+3. `supabase/verification/202608270001_nko_foundation_check.sql`
+4. `supabase/templates/provision-first-admin.sql`
 
-1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2はRLSと権限を検査する。3はテストユーザーを最初の管理者へ紐付けるためのテンプレートである。
+1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2は既存スプレッドシートのNKOメンバー4名を同じIDで登録する。3はRLSと権限を検査する。4はテストユーザーを最初の管理者へ紐付けるためのテンプレートである。
 
 ユーザーUUIDやメールアドレスはGitへ保存しない。
 

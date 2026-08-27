@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
 const migrationPath = "supabase/migrations/202608270001_nko_foundation.sql";
+const memberMigrationPath = "supabase/migrations/202608270002_nko_members.sql";
 const verificationPath = "supabase/verification/202608270001_nko_foundation_check.sql";
 
 const tableNames = [
@@ -66,4 +67,20 @@ test("foundation verification checks RLS, anonymous grants, and authenticated wr
   assert.match(sql, /grantee = 'anon'/);
   assert.match(sql, /grantee = 'authenticated'/);
   assert.match(sql, /privilege_type <> 'SELECT'/);
+});
+
+test("NKO member migration preserves the existing member ids and ordering", async () => {
+  const sql = await readFile(memberMigrationPath, "utf8");
+  const expectedMembers = [
+    ["c124f6f2-7ff8-4386-88df-f5dbd3007432", "兄", 10],
+    ["cb2972b8-6ca7-450a-910a-4c6261abc528", "妹", 20],
+    ["b0b41c09-be15-419f-a862-e43176638198", "母", 30],
+    ["4e4d754c-6a89-441e-af5c-9b56a3966f46", "父", 40]
+  ];
+
+  for (const [memberId, name, sortOrder] of expectedMembers) {
+    assert.match(sql, new RegExp(`'${memberId}', '${name}', true, ${sortOrder}`));
+  }
+
+  assert.match(sql, /on conflict \(group_id, member_id\) do update/i);
 });
