@@ -9,7 +9,9 @@
       "enabled": true,
       "default": true,
       "migrate_legacy_storage": true,
-      "legacy_environment": true
+      "legacy_environment": true,
+      "supabase_url": "",
+      "supabase_publishable_key": ""
     },
     {
       "id": "nko",
@@ -20,7 +22,9 @@
       "enabled": true,
       "default": false,
       "migrate_legacy_storage": false,
-      "legacy_environment": false
+      "legacy_environment": false,
+      "supabase_url": "https://orokyqzuqvtfmmotsknq.supabase.co",
+      "supabase_publishable_key": "sb_publishable_1d7O_bwxO5Wfnz8cMlcQYg_aSxqOl02"
     }
   ]
 }

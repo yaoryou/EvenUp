@@ -67,6 +67,61 @@
   border-radius: var(--radius-md);
 }
 
+.auth-preview-summary {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.auth-preview-summary div {
+  display: grid;
+  grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+  gap: 12px;
+}
+
+.auth-preview-summary dt {
+  color: var(--color-muted);
+  font-weight: 700;
+}
+
+.auth-preview-summary dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.auth-preview-success {
+  padding: 12px;
+  margin: 0;
+  background: var(--color-success-soft);
+  border-radius: var(--radius-sm);
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.auth-preview-details summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.auth-preview-details pre {
+  max-height: 320px;
+  padding: 12px;
+  overflow: auto;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.auth-preview-back,
+.auth-preview-link {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .toast {
     animation: toast-in 160ms ease-out;

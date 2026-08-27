@@ -14,7 +14,9 @@ test("repository group configuration has one default and unique output paths", a
     name: main.name,
     apiUrl: main.apiUrl,
     useDemoData: main.useDemoData,
-    migrateLegacyStorage: main.migrateLegacyStorage
+    migrateLegacyStorage: main.migrateLegacyStorage,
+    supabaseUrl: main.supabaseUrl,
+    supabasePublishableKey: main.supabasePublishableKey
   });
 });
 
@@ -61,6 +63,28 @@ test("duplicate group ids are rejected", () => {
   assert.throws(
     () => validateGroups({ groups: [group, { ...group, path: "other", default: false }] }),
     /Duplicate group id/
+  );
+});
+
+test("Supabase public configuration must be supplied as a valid pair", () => {
+  const base = {
+    id: "sample",
+    name: "Sample",
+    path: "sample",
+    api_url: "https://script.google.com/macros/s/example/exec",
+    default: true
+  };
+  assert.throws(
+    () => validateGroups({ groups: [{ ...base, supabase_url: "https://example.supabase.co" }] }),
+    /configured together/
+  );
+  assert.throws(
+    () => validateGroups({ groups: [{
+      ...base,
+      supabase_url: "https://example.invalid",
+      supabase_publishable_key: "sb_publishable_example"
+    }] }),
+    /hosted Supabase project URL/
   );
 });
 

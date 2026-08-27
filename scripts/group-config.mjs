@@ -29,6 +29,10 @@ export function validateGroups(document) {
     const useDemoData = entry.use_demo_data === true;
     const enabled = entry.enabled !== false;
     const isDefault = entry.default === true;
+    const supabaseUrl = typeof entry.supabase_url === "string" ? entry.supabase_url.trim() : "";
+    const supabasePublishableKey = typeof entry.supabase_publishable_key === "string"
+      ? entry.supabase_publishable_key.trim()
+      : "";
 
     if (!GROUP_ID_PATTERN.test(id)) {
       throw new Error(`${prefix}.id must use lowercase letters, numbers, and hyphens.`);
@@ -42,6 +46,15 @@ export function validateGroups(document) {
       throw new Error(`${prefix}.api_url must be a deployed Google Apps Script URL.`);
     }
     if (isDefault && !enabled) throw new Error(`${prefix} cannot be both default and disabled.`);
+    if (Boolean(supabaseUrl) !== Boolean(supabasePublishableKey)) {
+      throw new Error(`${prefix}.supabase_url and supabase_publishable_key must be configured together.`);
+    }
+    if (supabaseUrl && !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(supabaseUrl)) {
+      throw new Error(`${prefix}.supabase_url must be a hosted Supabase project URL.`);
+    }
+    if (supabasePublishableKey && !/^sb_publishable_[A-Za-z0-9_-]+$/.test(supabasePublishableKey)) {
+      throw new Error(`${prefix}.supabase_publishable_key must be a publishable key.`);
+    }
 
     ids.add(id);
     paths.add(path);
@@ -56,7 +69,9 @@ export function validateGroups(document) {
       enabled,
       default: isDefault,
       migrateLegacyStorage: entry.migrate_legacy_storage === true,
-      legacyEnvironment: entry.legacy_environment === true
+      legacyEnvironment: entry.legacy_environment === true,
+      supabaseUrl,
+      supabasePublishableKey
     });
   });
 

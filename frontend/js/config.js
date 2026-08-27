@@ -9,6 +9,8 @@ export const CONFIG = Object.freeze({
   API_URL: GROUP_CONFIG.apiUrl,
   API_VERSION: "v1",
   USE_DEMO_DATA: GROUP_CONFIG.useDemoData,
+  SUPABASE_URL: GROUP_CONFIG.supabaseUrl,
+  SUPABASE_PUBLISHABLE_KEY: GROUP_CONFIG.supabasePublishableKey,
   REQUEST_TIMEOUT_MS: 20_000,
   STORAGE_KEYS: {
     accessKey: `${storagePrefix}:access_key`,
