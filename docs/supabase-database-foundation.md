@@ -56,11 +56,12 @@ Supabase Authのユーザーと、支払い計算で使うNKOメンバーは別�
 1. `supabase/migrations/202608270001_nko_foundation.sql`
 2. `supabase/migrations/202608270002_nko_members.sql`
 3. `supabase/migrations/202608270003_nko_payment_rpcs.sql`
-4. `supabase/verification/202608270001_nko_foundation_check.sql`
-5. `supabase/verification/202608270003_nko_payment_rpcs_check.sql`
-6. `supabase/templates/provision-first-admin.sql`
+4. `supabase/migrations/202608270004_nko_ledger_lock.sql`
+5. `supabase/verification/202608270001_nko_foundation_check.sql`
+6. `supabase/verification/202608270003_nko_payment_rpcs_check.sql`
+7. `supabase/templates/provision-first-admin.sql`
 
-1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2は既存スプレッドシートのNKOメンバー4名を同じIDで登録する。3は支払い作成・編集・取消のトランザクションRPCを追加する。4はRLSとテーブル権限、5は支払いRPCの実行権限・二重処理防止・制約を検査する。6はテストユーザーを最初の管理者へ紐付けるためのテンプレートである。
+1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2は既存スプレッドシートのNKOメンバー4名を同じIDで登録する。3は支払い作成・編集・取消のトランザクションRPCを追加し、4は支払いと精算の同時更新をグループ単位で直列化する。5はRLSとテーブル権限、6は支払いRPCの実行権限・二重処理防止・制約を検査する。7はテストユーザーを最初の管理者へ紐付けるためのテンプレートである。
 
 ユーザーUUIDやメールアドレスはGitへ保存しない。
 
