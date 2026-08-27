@@ -1,4 +1,5 @@
 import { CONFIG } from "./config.js";
+import { loadDatabaseAccess, roleLabel } from "./auth/database-access.js";
 import { authUserSnapshot } from "./auth/session-view.js";
 import { announce, clear, element } from "./utils/dom.js";
 
@@ -113,6 +114,16 @@ function renderSignedOut(client) {
 
 function renderSignedIn(client, user) {
   const snapshot = authUserSnapshot(user);
+  const databaseStatus = element("p", {
+    className: "muted",
+    text: "データベースのアクセス権を確認しています…"
+  });
+  const databaseSummary = element("dl", { className: "auth-preview-summary" });
+  const databaseSection = element("section", { className: "auth-preview-database stack" }, [
+    element("h2", { text: "DBアクセス確認" }),
+    databaseStatus,
+    databaseSummary
+  ]);
   const logout = element("button", {
     className: "button button-danger button-block",
     type: "button",
@@ -151,10 +162,37 @@ function renderSignedIn(client, user) {
         }),
         element("pre", { text: JSON.stringify(snapshot, null, 2) })
       ]),
+      databaseSection,
       logout,
       element("a", { className: "auth-preview-back", href: "./", text: "現在のNKOへ戻る" })
     ])
   ));
+
+  loadDatabaseAccess(client, { groupId: CONFIG.GROUP_ID, userId: user.id })
+    .then(({ membership, currentMember, members }) => {
+      clear(databaseSummary);
+      if (!membership || !currentMember) {
+        databaseStatus.className = "inline-error";
+        databaseStatus.textContent = "このログインユーザーにはNKOの利用権限がありません。";
+        return;
+      }
+
+      databaseStatus.className = "auth-preview-success";
+      databaseStatus.textContent = "RLSを通してNKOデータを読み取れました。";
+      databaseSummary.append(
+        element("div", {}, [element("dt", { text: "メンバー" }), element("dd", { text: currentMember.name })]),
+        element("div", {}, [element("dt", { text: "操作権限" }), element("dd", { text: roleLabel(membership.role) })]),
+        element("div", {}, [
+          element("dt", { text: "閲覧可能" }),
+          element("dd", { text: members.map((member) => member.name).join("・") || "なし" })
+        ])
+      );
+    })
+    .catch((error) => {
+      clear(databaseSummary);
+      databaseStatus.className = "inline-error";
+      databaseStatus.textContent = `DBアクセス確認に失敗しました。(${error?.code || "unknown"})`;
+    });
 }
 
 async function start() {
