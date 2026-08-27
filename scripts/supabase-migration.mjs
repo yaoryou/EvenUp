@@ -265,3 +265,19 @@ Object.entries(counts).map(([sheetName, count]) => {
 `  (select count(*) from public.evenup_transfer_batches where group_id = '${groupId}') as transfer_batch_count,\n` +
 `  (select count(*) from public.evenup_audit_events where group_id = '${groupId}' and action = 'MIGRATION_IMPORT' and after_data->>'source_checksum' = '${checksum}') as migration_audit_count;\n`;
 }
+
+export function generateDryRunSql(snapshot, groupId) {
+  const importSql = generateImportSql(snapshot, groupId);
+  const commitMarker = "\ncommit;\n\n";
+  const markerIndex = importSql.lastIndexOf(commitMarker);
+  if (markerIndex < 0) throw new Error("Generated import SQL does not contain the expected commit marker");
+  const body = importSql.slice(0, markerIndex);
+  const verification = importSql.slice(markerIndex + commitMarker.length);
+  return `${body}\n\n-- These counts are observed inside the transaction.\n${verification}\n` +
+    `rollback;\n\n` +
+    `-- A successful dry run leaves the original database unchanged.\n` +
+    `select\n` +
+    `  (select count(*) from public.evenup_payments where group_id = '${groupId}') as payment_count_after_rollback,\n` +
+    `  (select count(*) from public.evenup_transfer_batches where group_id = '${groupId}') as transfer_batch_count_after_rollback,\n` +
+    `  (select count(*) from public.evenup_audit_events where group_id = '${groupId}' and action = 'MIGRATION_IMPORT') as migration_audit_count_after_rollback;\n`;
+}

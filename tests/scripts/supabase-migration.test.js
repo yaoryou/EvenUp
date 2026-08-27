@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { generateImportSql, validateSnapshot } from "../../scripts/supabase-migration.mjs";
+import { generateDryRunSql, generateImportSql, validateSnapshot } from "../../scripts/supabase-migration.mjs";
 
 const ids = {
   m1: "11111111-1111-4111-8111-111111111111",
@@ -85,4 +85,12 @@ test("generates a guarded one-transaction SQL import", () => {
   assert.match(sql, /Import refused: nko already has business data/);
   assert.match(sql, /MIGRATION_IMPORT/);
   assert.match(sql, /commit;/);
+});
+
+test("generates a rollback-only SQL dry run", () => {
+  const sql = generateDryRunSql(fixture(), "nko");
+  assert.doesNotMatch(sql, /\ncommit;\n/);
+  assert.match(sql, /counts are observed inside the transaction/);
+  assert.match(sql, /rollback;/);
+  assert.match(sql, /payment_count_after_rollback/);
 });
