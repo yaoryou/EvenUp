@@ -76,6 +76,8 @@ Supabase Authのユーザーと、支払い計算で使うNKOメンバーは別�
 - NKOフロントエンドはSupabase AuthとRPCを利用する。
 - GASは切替直後の確認期間が終わるまで復旧用に保持し、その後廃止する。
 
+公開画面の確認後は、NKOのGASデプロイを解除し、Apps Scriptの「自分のプロジェクト」からコンテナに関連付けられた`EvenUp NKO`スクリプトだけを完全に削除する。元データのスプレッドシートは削除しない。削除後に`npm run gas:retire -- --group nko --confirm nko --project-deleted`を実行し、ローカルの秘密設定から旧アクセスキー、スクリプトID、デプロイID、WebアプリURLを除去する。`--project-deleted`は、復旧不能なGAS削除を画面で確認したことを明示する安全弁である。
+
 ## スプレッドシートデータの移行
 
 GASの`migration.export_snapshot`は既存アクセスキーで認証した場合だけ、6シートを読み取り専用スナップショットとして返す。ローカルの`npm run migration:export-nko`は次を自動実行する。

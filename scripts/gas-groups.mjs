@@ -11,10 +11,10 @@ import {
 } from "./group-config.mjs";
 
 const [command, ...args] = process.argv.slice(2);
-const allowedCommands = new Set(["status", "push", "deployments", "deploy", "deploy-all", "validate"]);
+const allowedCommands = new Set(["status", "push", "deployments", "deploy", "deploy-all", "validate", "retire"]);
 
 if (!allowedCommands.has(command)) {
-  throw new Error("Usage: node scripts/gas-groups.mjs <status|push|deployments|deploy|deploy-all|validate> [--group <id>]");
+  throw new Error("Usage: node scripts/gas-groups.mjs <status|push|deployments|deploy|deploy-all|validate|retire> [--group <id>]");
 }
 
 const groups = await loadGroups();
@@ -128,6 +128,29 @@ async function deployGroup(group, label) {
   console.log(`OK ${group.id}: ${label}`);
 }
 
+async function retireGroup(group) {
+  const confirmIndex = args.indexOf("--confirm");
+  if (confirmIndex === -1 || args[confirmIndex + 1] !== group.id) {
+    throw new Error(`Retiring GAS requires --confirm ${group.id}.`);
+  }
+  if (!args.includes("--project-deleted")) {
+    throw new Error(
+      `Delete the container-bound Apps Script project in the Apps Script UI, then add --project-deleted.`
+    );
+  }
+  if (!group.supabaseUrl || !group.supabasePublishableKey) {
+    throw new Error(`${group.id}: Supabase must be configured before GAS retirement.`);
+  }
+  const { environment, path } = await loadEnvironment(group);
+  validateEnvironment(group, environment, ["spreadsheet_id"]);
+
+  await writeFile(path, `${JSON.stringify({
+    spreadsheet_id: environment.spreadsheet_id,
+    gas_retired_at: new Date().toISOString()
+  }, null, 2)}\n`, { mode: 0o600 });
+  console.log(`OK ${group.id}: GAS retirement finalized; spreadsheet retained and private credentials removed`);
+}
+
 if (command === "deploy-all") {
   if (requestedGroupId) throw new Error("deploy-all does not accept --group.");
   console.log("Running pre-deployment checks...");
@@ -163,5 +186,10 @@ if (command === "deploy-all") {
     run("npm", ["run", "check"]);
     run("npm", ["test"]);
     await deployGroup(group, sourceLabel());
+  }
+  if (command === "retire") {
+    run("npm", ["run", "check"]);
+    run("npm", ["test"]);
+    await retireGroup(group);
   }
 }

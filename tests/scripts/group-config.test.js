@@ -46,6 +46,37 @@ test("disabled groups are valid without a deployed API URL", () => {
   assert.equal(pending.apiUrl, "");
 });
 
+test("enabled Supabase groups are valid without a GAS URL", () => {
+  const group = validateGroups({
+    groups: [{
+      id: "supabase-only",
+      name: "Supabase only",
+      path: "supabase-only",
+      api_url: "",
+      supabase_url: "https://projectref.supabase.co",
+      supabase_publishable_key: "sb_publishable_EXAMPLE",
+      enabled: true,
+      default: true
+    }]
+  })[0];
+  assert.equal(group.apiUrl, "");
+  assert.equal(group.supabaseUrl, "https://projectref.supabase.co");
+});
+
+test("enabled groups must configure a backend", () => {
+  assert.throws(
+    () => validateGroups({ groups: [{
+      id: "missing",
+      name: "Missing",
+      path: "missing",
+      api_url: "",
+      enabled: true,
+      default: true
+    }] }),
+    /either a GAS or Supabase backend/
+  );
+});
+
 test("example configuration is valid for multiple groups", async () => {
   const groups = await loadGroups(resolve("config/groups.example.json"));
   assert.equal(groups.length, 2);

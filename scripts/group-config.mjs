@@ -42,7 +42,7 @@ export function validateGroups(document) {
     }
     if (ids.has(id)) throw new Error(`Duplicate group id: ${id}`);
     if (paths.has(path)) throw new Error(`Duplicate group path: ${path}`);
-    if (enabled && !useDemoData && !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(apiUrl)) {
+    if (apiUrl && !/^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(apiUrl)) {
       throw new Error(`${prefix}.api_url must be a deployed Google Apps Script URL.`);
     }
     if (isDefault && !enabled) throw new Error(`${prefix} cannot be both default and disabled.`);
@@ -54,6 +54,9 @@ export function validateGroups(document) {
     }
     if (supabasePublishableKey && !/^sb_publishable_[A-Za-z0-9_-]+$/.test(supabasePublishableKey)) {
       throw new Error(`${prefix}.supabase_publishable_key must be a publishable key.`);
+    }
+    if (enabled && !useDemoData && !apiUrl && !supabaseUrl) {
+      throw new Error(`${prefix} must configure either a GAS or Supabase backend.`);
     }
 
     ids.add(id);
@@ -131,7 +134,7 @@ export function validateEnvironment(group, environment, requiredFields = []) {
       throw new Error(`${group.id}: private field ${field} is required.`);
     }
   }
-  if (environment.web_app_url && environment.web_app_url !== group.apiUrl) {
+  if (group.apiUrl && environment.web_app_url && environment.web_app_url !== group.apiUrl) {
     throw new Error(`${group.id}: web_app_url does not match config/groups.json.`);
   }
   return environment;
