@@ -58,22 +58,23 @@ Supabase Authのユーザーと、支払い計算で使うNKOメンバーは別�
 3. `supabase/migrations/202608270003_nko_payment_rpcs.sql`
 4. `supabase/migrations/202608270004_nko_ledger_lock.sql`
 5. `supabase/migrations/202608270005_nko_settlement_rpcs.sql`
-6. `supabase/verification/202608270001_nko_foundation_check.sql`
-7. `supabase/verification/202608270003_nko_payment_rpcs_check.sql`
-8. `supabase/verification/202608270005_nko_settlement_rpcs_check.sql`
-9. `supabase/templates/provision-first-admin.sql`
+6. `supabase/migrations/202608270006_nko_read_rpcs.sql`
+7. `supabase/verification/202608270001_nko_foundation_check.sql`
+8. `supabase/verification/202608270003_nko_payment_rpcs_check.sql`
+9. `supabase/verification/202608270005_nko_settlement_rpcs_check.sql`
+10. `supabase/verification/202608270006_nko_read_rpcs_check.sql`
+11. `supabase/templates/provision-first-admin.sql`
 
-1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2は既存スプレッドシートのNKOメンバー4名を同じIDで登録する。3は支払い作成・編集・取消のトランザクションRPCを追加し、4は支払いと精算の同時更新をグループ単位で直列化し、5は個別精算・最適化精算・最新精算取消RPCを追加する。6はRLSとテーブル権限、7は支払いRPCの実行権限・二重処理防止・制約、8は精算RPCと台帳ロックの実行権限を検査する。9はテストユーザーを最初の管理者へ紐付けるためのテンプレートである。
+1はテーブル・制約・索引・RLS・権限・NKOグループを作成する。2は既存スプレッドシートのNKOメンバー4名を同じIDで登録する。3は支払い作成・編集・取消のトランザクションRPCを追加し、4は支払いと精算の同時更新をグループ単位で直列化し、5は個別精算・最適化精算・最新精算取消RPCを追加する。6は初期表示・精算候補・履歴取得RPCを追加する。7〜10は各権限・制約・二重処理防止・台帳ロックを検査する。11は最初の管理者を紐付けるためのテンプレートである。
 
 ユーザーUUIDやメールアドレスはGitへ保存しない。
 
-## 次の段階
+## 移行状態
 
-DB基盤の適用と最初の管理者の紐付け後、以下を実装する。
-
-1. 初期表示・履歴取得RPC
-2. Google Sheetからのデータ変換と照合
-3. NKOフロントエンドのAPI切り替え
+- 認証・DB基盤・支払い・精算・読取RPCはSupabaseへ適用済み。
+- NKOのスプレッドシートデータはチェックサムと件数を照合して正式取込済み。
+- NKOフロントエンドはSupabase AuthとRPCを利用する。
+- GASは切替直後の確認期間が終わるまで復旧用に保持し、その後廃止する。
 
 ## スプレッドシートデータの移行
 

@@ -1,4 +1,5 @@
 import { CONFIG } from "./config.js";
+import { getSupabaseClient } from "./auth/client.js";
 import { loadDatabaseAccess, roleLabel } from "./auth/database-access.js";
 import { authUserSnapshot } from "./auth/session-view.js";
 import { announce, clear, element } from "./utils/dom.js";
@@ -201,18 +202,7 @@ async function start() {
     return;
   }
 
-  const client = window.supabase.createClient(
-    CONFIG.SUPABASE_URL,
-    CONFIG.SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: false,
-        storageKey: `evenup:${CONFIG.GROUP_ID}:supabase-auth-preview`
-      }
-    }
-  );
+  const client = getSupabaseClient();
 
   const { data, error } = await client.auth.getSession();
   if (error) {

@@ -11,6 +11,8 @@ export const CONFIG = Object.freeze({
   USE_DEMO_DATA: GROUP_CONFIG.useDemoData,
   SUPABASE_URL: GROUP_CONFIG.supabaseUrl,
   SUPABASE_PUBLISHABLE_KEY: GROUP_CONFIG.supabasePublishableKey,
+  USE_SUPABASE: Boolean(GROUP_CONFIG.supabaseUrl && GROUP_CONFIG.supabasePublishableKey),
+  SUPABASE_AUTH_STORAGE_KEY: `${storagePrefix}:supabase-auth-preview`,
   REQUEST_TIMEOUT_MS: 20_000,
   STORAGE_KEYS: {
     accessKey: `${storagePrefix}:access_key`,

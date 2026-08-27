@@ -3,6 +3,7 @@ import { startRouter } from "./app/router.js";
 import { applyPreview, getState, resetStore, setState, subscribe } from "./app/store.js";
 import { callApi } from "./api/client.js";
 import { CONFIG } from "./config.js";
+import { getSupabaseClient } from "./auth/client.js";
 import { createAppShell } from "./components/app-shell.js";
 import { showDialog } from "./components/dialog.js";
 import { clear, element } from "./utils/dom.js";
@@ -25,8 +26,12 @@ if (CONFIG.LEGACY_STORAGE_KEYS) {
 }
 
 function settingsDialog() {
+  const state = getState();
   const members = getState().data.members.filter((member) => member.active);
-  const status = element("p", { className: "muted", text: CONFIG.USE_DEMO_DATA ? "現在はデモデータで動作しています。" : "GAS APIに接続しています。" });
+  const connectionLabel = CONFIG.USE_DEMO_DATA
+    ? "現在はデモデータで動作しています。"
+    : CONFIG.USE_SUPABASE ? "Supabaseに接続しています。" : "GAS APIに接続しています。";
+  const status = element("p", { className: "muted", text: connectionLabel });
   const operatorSelect = element("select", { className: "select", id: "operator-member" }, [
     element("option", { value: "", text: "未設定" }),
     ...members.map((member) => element("option", { value: member.member_id, text: member.name }))
@@ -71,14 +76,22 @@ function settingsDialog() {
       }
     }
   });
+  const identitySetting = CONFIG.USE_SUPABASE
+    ? element("div", { className: "field" }, [
+        element("span", { className: "field-label", text: "ログインユーザー" }),
+        element("span", {
+          text: members.find((member) => member.member_id === state.auth.memberId)?.name || "未設定"
+        })
+      ])
+    : element("div", { className: "field" }, [
+        element("label", { for: "operator-member", text: "この端末の操作ユーザ" }),
+        operatorSelect
+      ]);
   showDialog({
     title: "設定",
     content: element("div", { className: "stack" }, [
       element("p", { className: "muted", text: `${CONFIG.APP_NAME} v0.2.0 / ${CONFIG.GROUP_NAME}` }),
-      element("div", { className: "field" }, [
-        element("label", { for: "operator-member", text: "この端末の操作ユーザ" }),
-        operatorSelect
-      ]),
+      identitySetting,
       element("div", { className: "field" }, [
         element("label", { for: "target-selection-mode", text: "割り勘する人の初期選択" }),
         targetSelectionSelect
@@ -89,14 +102,20 @@ function settingsDialog() {
     ]),
     confirmLabel: "この端末からログアウト",
     danger: true,
-    onConfirm: () => {
+    onConfirm: async () => {
+      if (CONFIG.USE_SUPABASE) {
+        await getSupabaseClient().auth.signOut();
+      }
       removeStored(CONFIG.STORAGE_KEYS.accessKey);
       removeStored(CONFIG.STORAGE_KEYS.lastPayer);
       removeStored(CONFIG.STORAGE_KEYS.operatorMemberId);
       removeStored(CONFIG.STORAGE_KEYS.targetSelectionMode);
       removeStored(CONFIG.STORAGE_KEYS.settlementMode);
       resetStore();
-      setState((state) => ({ ...state, auth: { status: "unauthenticated" } }));
+      setState((current) => ({
+        ...current,
+        auth: { status: "unauthenticated", memberId: null, role: null, email: null }
+      }));
     }
   });
 }

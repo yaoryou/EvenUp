@@ -1,5 +1,5 @@
 const initialState = () => ({
-  auth: { status: "checking" },
+  auth: { status: "checking", memberId: null, role: null, email: null },
   data: {
     members: [],
     openPayments: [],
@@ -38,6 +38,13 @@ export function resetStore() {
 export function applyPreview(data) {
   setState((current) => ({
     ...current,
+    auth: data.current_user
+      ? {
+          ...current.auth,
+          memberId: data.current_user.member_id,
+          role: data.current_user.role
+        }
+      : current.auth,
     data: {
       members: data.members || current.data.members,
       openPayments: data.open_payments || [],
