@@ -2,6 +2,7 @@
 node_modules/
 .clasp.json
 .clasprc.json
+.evenup-migration/
 .evenup-production.json
 .evenup-groups/
 dist/

@@ -6,6 +6,7 @@ EvenUp.Router = {
     "payments.update": "updatePayment",
     "payments.cancel": "cancelPayment",
     "history.list": "listHistory",
+    "migration.export_snapshot": "exportMigrationSnapshot",
     "settlement.preview": "previewSettlement",
     "transfers.create_direct": "createDirectTransfer",
     "transfers.create_optimized": "createOptimizedTransfer",

@@ -49,5 +49,9 @@ EvenUp.Actions = {
 
   listHistory: function (request) {
     return EvenUp.QueryService.history(request.payload);
+  },
+
+  exportMigrationSnapshot: function () {
+    return EvenUp.MigrationService.exportSnapshot();
   }
 };

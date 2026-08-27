@@ -19,6 +19,7 @@
     "gas:deployments": "node scripts/gas-groups.mjs deployments",
     "gas:deploy": "node scripts/gas-groups.mjs deploy",
     "gas:deploy:all": "node scripts/gas-groups.mjs deploy-all",
+    "migration:export-nko": "node scripts/export-supabase-migration.mjs --group nko",
     "smoke:production": "node scripts/serve-production-smoke.mjs"
   },
   "engines": {
