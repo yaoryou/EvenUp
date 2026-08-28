@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -6,6 +6,7 @@ import {
   groupIdFromArgs,
   loadEnvironment,
   loadGroups,
+  pathExists,
   selectGroup,
   validateEnvironment
 } from "./group-config.mjs";
@@ -144,10 +145,19 @@ async function retireGroup(group) {
   const { environment, path } = await loadEnvironment(group);
   validateEnvironment(group, environment, ["spreadsheet_id"]);
 
-  await writeFile(path, `${JSON.stringify({
+  const retiredEnvironment = {
     spreadsheet_id: environment.spreadsheet_id,
     gas_retired_at: new Date().toISOString()
-  }, null, 2)}\n`, { mode: 0o600 });
+  };
+  await writeFile(path, `${JSON.stringify(retiredEnvironment, null, 2)}\n`, { mode: 0o600 });
+
+  const legacyPath = resolve(".evenup-production.json");
+  if (path !== legacyPath && await pathExists(legacyPath)) {
+    const legacyEnvironment = JSON.parse(await readFile(legacyPath, "utf8"));
+    if (environment.script_id && legacyEnvironment.script_id === environment.script_id) {
+      await writeFile(legacyPath, `${JSON.stringify(retiredEnvironment, null, 2)}\n`, { mode: 0o600 });
+    }
+  }
   console.log(`OK ${group.id}: GAS retirement finalized; spreadsheet retained and private credentials removed`);
 }
 
