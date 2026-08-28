@@ -8,5 +8,6 @@
 6. [本番環境セットアップ](./production-setup.md)
 7. [NKO Supabase Auth検証](./supabase-auth-preview.md)
 8. [NKO Supabase DB基盤](./supabase-database-foundation.md)
+9. [チンパン Supabase移行](./fate-supabase-migration.md)
 
 実装判断が衝突した場合は、要件定義書を上位とし、画面設計書、API仕様書、スプレッドシート定義書、実装構成書を整合させる。

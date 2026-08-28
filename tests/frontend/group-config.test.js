@@ -8,6 +8,7 @@ test("frontend configuration scopes browser storage to the group", () => {
   assert.equal(CONFIG.STORAGE_KEYS.accessKey, "evenup:fate:access_key");
   assert.equal(CONFIG.STORAGE_KEYS.operatorMemberId, "evenup:fate:operator_member_id");
   assert.equal(CONFIG.STORAGE_KEYS.targetSelectionMode, "evenup:fate:target_selection_mode");
-  assert.equal(CONFIG.LEGACY_STORAGE_KEYS.accessKey, "evenup_access_key");
-  assert.equal(CONFIG.SUPABASE_URL, "");
+  assert.equal(CONFIG.LEGACY_STORAGE_KEYS, null);
+  assert.equal(CONFIG.SUPABASE_URL, "https://orokyqzuqvtfmmotsknq.supabase.co");
+  assert.equal(CONFIG.USE_SUPABASE, true);
 });

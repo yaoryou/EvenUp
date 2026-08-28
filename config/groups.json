@@ -4,14 +4,14 @@
       "id": "fate",
       "name": "チンパン",
       "path": "fate",
-      "api_url": "https://script.google.com/macros/s/AKfycby19GzSavQH4XSGG769kr28j8JJH21EE6bt09LTD4UoDruSGpOIEvjjknOz_a5RK9kz/exec",
+      "api_url": "",
       "use_demo_data": false,
       "enabled": true,
       "default": true,
-      "migrate_legacy_storage": true,
-      "legacy_environment": true,
-      "supabase_url": "",
-      "supabase_publishable_key": ""
+      "migrate_legacy_storage": false,
+      "legacy_environment": false,
+      "supabase_url": "https://orokyqzuqvtfmmotsknq.supabase.co",
+      "supabase_publishable_key": "sb_publishable_1d7O_bwxO5Wfnz8cMlcQYg_aSxqOl02"
     },
     {
       "id": "nko",

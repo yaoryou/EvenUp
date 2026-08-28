@@ -3,9 +3,9 @@
 export const GROUP_CONFIG = Object.freeze({
   id: "fate",
   name: "チンパン",
-  apiUrl: "https://script.google.com/macros/s/AKfycby19GzSavQH4XSGG769kr28j8JJH21EE6bt09LTD4UoDruSGpOIEvjjknOz_a5RK9kz/exec",
+  apiUrl: "",
   useDemoData: false,
-  migrateLegacyStorage: true,
-  supabaseUrl: "",
-  supabasePublishableKey: ""
+  migrateLegacyStorage: false,
+  supabaseUrl: "https://orokyqzuqvtfmmotsknq.supabase.co",
+  supabasePublishableKey: "sb_publishable_1d7O_bwxO5Wfnz8cMlcQYg_aSxqOl02"
 });

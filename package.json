@@ -20,6 +20,7 @@
     "gas:deploy": "node scripts/gas-groups.mjs deploy",
     "gas:deploy:all": "node scripts/gas-groups.mjs deploy-all",
     "gas:retire": "node scripts/gas-groups.mjs retire",
+    "migration:export-fate": "node scripts/export-supabase-migration.mjs --group fate",
     "migration:export-nko": "node scripts/export-supabase-migration.mjs --group nko",
     "smoke:production": "node scripts/serve-production-smoke.mjs"
   },
